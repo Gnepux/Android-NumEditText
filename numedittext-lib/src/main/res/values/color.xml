@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <color name="lightgray">#D3D3D3</color><!--亮灰色 -->
+    <color name="cl_initial">#f8f8f8</color>
+    <color name="red">#FF0000</color><!--红色 -->
+</resources>

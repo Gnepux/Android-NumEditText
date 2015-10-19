@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Encoding" useUTFGuessing="true" native2AsciiForPropertiesFiles="false">
+    <file url="file://$PROJECT_DIR$/numedittext-lib/libs/arity-2.1.2.jar" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/numedittext-lib/src/main/java/com/gnepux/numedittext/NumEditText.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/numedittext-lib/src/main/java/com/gnepux/numedittext/extras/ClearEditText.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/numedittext-lib/src/main/java/com/gnepux/numedittext/utils/MathUtils.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/numedittext-lib/src/main/java/com/gnepux/numedittext/utils/MathUtils.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/numedittext-lib/src/main/res/drawable-hdpi/clear.png" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/numedittext-lib/src/main/res/drawable-hdpi/num_plus_icon.png" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/numedittext-lib/src/main/res/drawable-hdpi/num_reduce_icon.png" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/numedittext-lib/src/main/res/drawable-hdpi/num_reduce_icon_disable.png" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/numedittext-lib/src/main/res/drawable/red_xu_kuang.xml" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/numedittext-lib/src/main/res/drawable/xu_kuang.xml" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/numedittext-lib/src/main/res/layout/custom_edit_dialog.xml" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/numedittext-lib/src/main/res/layout/custom_view_num_edittext.xml" charset="UTF-8" />
+  </component>
+</project>
+
