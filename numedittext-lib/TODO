@@ -1,0 +1,8 @@
+2015.10.20
+增加Attribute
+初始化时的默认值需按inputType区别整数和小数
+增加API，控制最大位数和小数位数
+统一数据类型，参数是int、double or string；
+统一数据长度，long or int
+将shake功能内置
+弹出框和最大最小值的逻辑控制

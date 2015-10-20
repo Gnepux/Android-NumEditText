@@ -23,24 +23,72 @@ import com.gnepux.numedittext.utils.MathUtils;
 /**
  * 自定义控件NumEditText
  * Created by Gnepux on 2015/10/19.
+ * --------------------
+ * | - |   130    | + |
+ * --------------------
+ *
+ * API list:
+ *      1.void setNum(String num) 设置数字
+ *      2.String getNumString()     获取数字
+ *      3.Double getNumDouble()     获取数字
+ *      4.void setEnabled(boolean enabled)   设置控件是否可用
+ *      5.void add(int num, boolean enableAnimation)   加
+ *      6.void minus(int num, boolean enableAnimation)   减
+ *      7.void setOnNumChangedListener(OnNumChangedListener l) 设置数量变动的监听
+ *      8.void shake()	摇晃动画
+ *      9.void setInputType(int type)	设置InputType标识
+ *      10.void enableInputDecimal(boolean canInputDecimal)	设置弹窗是否可以输入小数
+ *      11.void setMaxNum(String maxNum)	设置最大值
+ *      12.void setMinNum(String minNum)    设置最小值
  */
 
 public class NumEditText extends LinearLayout implements View.OnClickListener {
 
-    Button btn_min, btn_add;
-    EditText numEditText;
-    View numEditview;
+    // 放大比率
+    private float SCALE_RATIO = 1.3f;
 
-    // inputType默认不能输入小数
-//    int inputType = InputType.TYPE_CLASS_NUMBER;
-    int inputType = InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL;
+    // 放大动画持续时间 ms
+    private long SCALE_DURATION = 200;
 
-    NumChangedListener numChangedListener = null;
+    // 摇晃动画一秒晃动的次数
+    private int SHAKE_PER_SECOND = 5;
 
-    private static final int MIN_NUM = 1;
-    private double mMaxNum = Double.MAX_VALUE;
+    // 摇晃动画持续时间 ms
+    private long SHAKE_DURATION = 500;
 
-    TextWatcher watcher = new TextWatcher() {
+    // EditText inputType
+    private int inputType = InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL;   //可以输入小数
+//    private int inputType = InputType.TYPE_CLASS_NUMBER;  // 不能输入小数
+
+    // 默认最小值为1
+    private double MIN_NUM = 1;
+
+    // 默认最大值为MAX_VALUE
+    private double MAX_NUM = Double.MAX_VALUE;
+
+    private Button btn_min;
+
+    private Button btn_add;
+
+    private EditText numEditText;
+
+    private View numEditView;
+
+    private OnNumChangedListener onNumChangedListener = null;
+
+    public interface OnNumChangedListener {
+
+        void onAddClick();
+
+        void onMinusClick();
+
+        void onEditChange();
+
+        // TODO:手动输入时的监听
+        // void onInputNumChanged(int num);
+    }
+
+    TextWatcher mWatcher = new TextWatcher() {
         @Override
         public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
@@ -66,14 +114,6 @@ public class NumEditText extends LinearLayout implements View.OnClickListener {
                 btn_min.setEnabled(true);
                 //numChangedListener.onInputNumChanged(num);
             }
-
-/*            btn_min.setBackgroundResource(R.drawable.num_reduce_icon);
-            btn_min.setEnabled(true);
-
-            if (num < MIN_NUM) {
-                btn_min.setBackgroundResource(R.drawable.num_reduce_icon_disable);
-                btn_min.setEnabled(false);
-            }*/
         }
     };
 
@@ -87,187 +127,73 @@ public class NumEditText extends LinearLayout implements View.OnClickListener {
 
     public NumEditText(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
-        numEditview = LayoutInflater.from(context).inflate(R.layout.custom_view_num_edittext, this);
-        initWidget();
-        addListener();
+        numEditView = LayoutInflater.from(context).inflate(R.layout.custom_view_num_edittext, this);
+        initWidget();   // 初始化控件
+        addListener();  // 加监听
     }
 
+    /**
+     * 初始化控件
+     */
     private void initWidget() {
-        numEditText = (EditText) numEditview.findViewById(R.id.num_edittext);
-        btn_add = (Button) numEditview.findViewById(R.id.btn_add);
-        btn_min = (Button) numEditview.findViewById(R.id.btn_min);
-        numEditText.setText("1.0");
+        numEditText = (EditText) numEditView.findViewById(R.id.num_edittext);
+        btn_add = (Button) numEditView.findViewById(R.id.btn_add);
+        btn_min = (Button) numEditView.findViewById(R.id.btn_min);
+        if (inputType == (InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL)) {
+            numEditText.setText(String.valueOf(MIN_NUM));
+        } else {
+            numEditText.setText(String.valueOf((int)MIN_NUM));
+        }
+
         btn_min.setBackgroundResource(R.drawable.num_reduce_icon_disable);
         btn_min.setEnabled(false);
-        numEditText.addTextChangedListener(watcher);
+        numEditText.addTextChangedListener(mWatcher);
     }
 
+    /**
+     * 加监听
+     */
     private void addListener() {
         numEditText.setOnClickListener(this);
         btn_add.setOnClickListener(this);
         btn_min.setOnClickListener(this);
- /*       btn_add.setOnClickListener(new OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                // 默认显示动画
-                add(1, true);
-            }
-        });
-
-        btn_min.setOnClickListener(new OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                //默认显示动画
-                minus(1, true);
-            }
-        });*/
-    }
-
-    /**
-     * 设置数字
-     *
-     * @param num
-     */
-    public void setNum(String num) {
-        numEditText.setText(num);
-    }
-
-    /**
-     * 获取数字（String）
-     *
-     * @return
-     */
-    public String getNumString() {
-        return numEditText.getText().toString();
-    }
-
-    /**
-     * 获取数字（int）
-     *
-     * @return
-     */
-    public double getNumDouble() {
-        return Double.valueOf(numEditText.getText().toString());
-    }
-
-    /**
-     * Disable整个控件
-     */
-    public void setDisable() {
-        numEditText.setEnabled(false);
-        btn_add.setEnabled(false);
-        btn_min.setEnabled(false);
-    }
-
-    /**
-     * Enable整个控件
-     */
-    public void setEnable() {
-        numEditText.setEnabled(true);
-        btn_add.setEnabled(true);
-        btn_min.setEnabled(true);
-    }
-
-    /**
-     * @param num
-     * @param showScaleAnimation 设置是否显示动画
-     */
-    public void add(int num, boolean showScaleAnimation) {
-//        double value = Double.valueOf(numEditText.getText().toString());
-//        value += num;
-        //numEditText.setText(Integer.toString(value));
- /*       if (value > 0) {
-            btn_min.setBackgroundResource(R.drawable.num_reduce_icon);
-            btn_min.setEnabled(true);
-        }*/
-
-        String valueStr = MathUtils.count(numEditText.getText().toString(), num + "", "+");
-
-        if (showScaleAnimation) {
-            scaleEditText(valueStr, 0);
-        } else {
-            numEditText.setText(valueStr);
-            if (numChangedListener != null) {
-                numChangedListener.onAddClick();
-            }
-        }
-
-    }
-
-    /**
-     * @param num
-     * @param showScaleAnimation 设置是否显示动画
-     */
-    public void minus(int num, boolean showScaleAnimation) {
-//        double value = Double.valueOf(numEditText.getText().toString());
-//        value = value - num;
-
-        String valueStr = MathUtils.count(numEditText.getText().toString(), num + "", "-");
-
-        if (Double.parseDouble(valueStr) < 0) {
-            valueStr = "0.0";
-        }
-
-//        if (value<0) {
-//            value = 0;
-        //       }
-/*        if (value == 0) {
-            btn_min.setBackgroundResource(R.drawable.num_reduce_icon_disable);
-            btn_min.setEnabled(false);
-        }*/
-        //numEditText.setText(Integer.toString(value));
-
-        if (showScaleAnimation) {
-            scaleEditText(valueStr, 1);
-        } else {
-            numEditText.setText(valueStr);
-            if (numChangedListener != null) {
-                numChangedListener.onMinusClick();
-            }
-        }
-
     }
 
     /**
      * @param valueStr
-     * @param type     0代表加 1代表减
+     * @param type     0代表加+ 1代表减-
      */
     private void scaleEditText(final String valueStr, final int type) {
 
-        //放大动画 放大1.3倍
-        final ScaleAnimation scaleAnimation = new ScaleAnimation(1.0f, 1.3f, 1.0f, 1.3f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
-        //放大动画 持续200毫秒
-        scaleAnimation.setDuration(200);
+        //放大动画
+        final ScaleAnimation scaleAnimation = new ScaleAnimation(1.0f, SCALE_RATIO, 1.0f, SCALE_RATIO, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+        //放大动画
+        scaleAnimation.setDuration(SCALE_DURATION);
         scaleAnimation.setStartOffset(0);
         scaleAnimation.setAnimationListener(new Animation.AnimationListener() {
 
             @Override
             public void onAnimationStart(Animation animation) {
-                // TODO Auto-generated method stub
                 numEditText.setText(valueStr);
             }
 
             @Override
             public void onAnimationRepeat(Animation animation) {
-                // TODO Auto-generated method stub
 
             }
 
             @Override
             public void onAnimationEnd(Animation animation) {
-                // TODO Auto-generated method stub
                 if (type == 0) {
-                    if (numChangedListener != null) {
-                        numChangedListener.onAddClick();
+                    if (onNumChangedListener != null) {
+                        onNumChangedListener.onAddClick();
                     }
                 } else if (type == 1) {
-                    if (getNumDouble() <= mMaxNum) {
+                    if (getNumDouble() <= MAX_NUM) {
                         setNormalStatus();
                     }
-                    if (numChangedListener != null) {
-                        numChangedListener.onMinusClick();
+                    if (onNumChangedListener != null) {
+                        onNumChangedListener.onMinusClick();
                     }
                 }
             }
@@ -322,14 +248,14 @@ public class NumEditText extends LinearLayout implements View.OnClickListener {
 //                        numEditText.addTextChangedListener(watcher);
                     String result = MathUtils.count(num.getText().toString(), "", "+");
 
-                    // 15010551 控制数量不能为0
+                    // 控制数量不能为0
                     if (Double.parseDouble(result) > 0) {
                         numEditText.setText(result);
                     } else {
                         Toast.makeText(getContext(), "数量不能为0", Toast.LENGTH_SHORT).show();
                     }
-                    if (numChangedListener != null) {
-                        numChangedListener.onEditChange();
+                    if (onNumChangedListener != null) {
+                        onNumChangedListener.onEditChange();
                     }
                 }
             });
@@ -338,42 +264,122 @@ public class NumEditText extends LinearLayout implements View.OnClickListener {
         }
     }
 
-    public interface NumChangedListener {
-
-        void onAddClick();
-
-        void onMinusClick();
-
-        void onEditChange();
-        // TODO:手动输入时的监听
-        // void onInputNumChanged(int num);
-    }
-
-    public void setOnNumChangedListener(NumChangedListener l) {
-        numChangedListener = l;
-    }
-
     /**
-     * 使用红边框
+     * 设置成警告状态，使用红边框
      */
-    public void setAlertStatus() {
+    private void setAlertStatus() {
         numEditText.setBackgroundResource(R.drawable.red_xu_kuang);
     }
 
     /**
-     * 使用普通灰边框
+     * 设置成普通状态，使用普通灰边框
      */
-    public void setNormalStatus() {
+    private void setNormalStatus() {
         numEditText.setBackgroundResource(R.drawable.xu_kuang);
     }
 
-    public void setShake() {
-        //摇摆
-        TranslateAnimation alphaAnimation2 = new TranslateAnimation(0, 10, 0, 0);
-        alphaAnimation2.setDuration(500); //持续半秒
-        alphaAnimation2.setInterpolator(new CycleInterpolator(5)); //一秒晃5下
-        numEditText.setAnimation(alphaAnimation2);
-        alphaAnimation2.setAnimationListener(new Animation.AnimationListener() {
+    //=============================================================================================
+    // public method
+
+    /**
+     * 设置数字
+     *
+     * @param num
+     */
+    public void setNum(String num) {
+        numEditText.setText(num);
+    }
+
+    /**
+     * 获取数字（String）
+     *
+     * @return
+     */
+    public String getNumString() {
+        return numEditText.getText().toString();
+    }
+
+    /**
+     * 获取数字（double）
+     *
+     * @return
+     */
+    public double getNumDouble() {
+        return Double.valueOf(numEditText.getText().toString());
+    }
+
+    /**
+     * 设置控件是否可用
+     * @param enabled
+     */
+    public void setEnabled(boolean enabled) {
+        numEditText.setEnabled(enabled);
+        btn_add.setEnabled(enabled);
+        btn_min.setEnabled(enabled);
+    }
+
+    /**
+     * 加
+     * @param num 加数
+     * @param enableAnimation 设置是否显示动画
+     */
+    public void add(int num, boolean enableAnimation) {
+        String valueStr = MathUtils.count(numEditText.getText().toString(), num + "", "+");
+
+        if (enableAnimation) {
+            scaleEditText(valueStr, 0);
+        } else {
+            numEditText.setText(valueStr);
+            if (onNumChangedListener != null) {
+                onNumChangedListener.onAddClick();
+            }
+        }
+    }
+
+    /**
+     * 减
+     * @param num 减数
+     * @param enableAnimation 设置是否显示动画
+     */
+    public void minus(int num, boolean enableAnimation) {
+        String valueStr = MathUtils.count(numEditText.getText().toString(), num + "", "-");
+
+        if (Double.parseDouble(valueStr) < MIN_NUM) {
+            if (inputType == (InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL )) {
+                valueStr = String.valueOf(MIN_NUM);
+            } else if (inputType == InputType.TYPE_CLASS_NUMBER) {
+                valueStr = String.valueOf((int)MIN_NUM);
+            }
+        }
+
+        if (enableAnimation) {
+            scaleEditText(valueStr, 1);
+        } else {
+            numEditText.setText(valueStr);
+            if (onNumChangedListener != null) {
+                onNumChangedListener.onMinusClick();
+            }
+        }
+    }
+
+    /**
+     * 设置数量变动的监听
+     * @param l
+     */
+    public void setOnNumChangedListener(OnNumChangedListener l) {
+        onNumChangedListener = l;
+    }
+
+    /**
+     * 摇晃动画
+     */
+    public void shake() {
+        TranslateAnimation shakeAnimation = new TranslateAnimation(0, 10, 0, 0);
+        shakeAnimation.setDuration(SHAKE_DURATION); //持续半秒
+        shakeAnimation.setInterpolator(new CycleInterpolator(SHAKE_PER_SECOND)); //一秒晃5下
+        shakeAnimation.setStartOffset(0);
+//      numEditText.setAnimation(shakeAnimation);
+        shakeAnimation.setAnimationListener(new Animation.AnimationListener() {
             @Override
             public void onAnimationStart(Animation animation) {
                 setAlertStatus();
@@ -389,7 +395,8 @@ public class NumEditText extends LinearLayout implements View.OnClickListener {
 
             }
         });
-        alphaAnimation2.start();
+//      shakeAnimation.start();
+        numEditText.startAnimation(shakeAnimation);
     }
 
     /**
@@ -412,15 +419,27 @@ public class NumEditText extends LinearLayout implements View.OnClickListener {
         }
     }
 
+    /**
+     * 设置最大值
+     * @param maxNum
+     */
     public void setMaxNum(String maxNum) {
         if (Double.parseDouble(maxNum) < MIN_NUM) {
-            mMaxNum = MIN_NUM;
+            MAX_NUM = MIN_NUM;
         }
-        this.mMaxNum = Double.parseDouble(maxNum);
-/*        if (maxNum < MIN_NUM) {
-            this.mMaxNum = MIN_NUM;
+        this.MAX_NUM = Double.parseDouble(maxNum);
+    }
+
+    /**
+     * 设置最小值
+     * @param minNum
+     */
+    public void setMinNum(String minNum) {
+        if (Double.parseDouble(minNum) > MAX_NUM) {
+            MIN_NUM = MAX_NUM;
         }
-        this.mMaxNum = maxNum;*/
+        this.MIN_NUM = Double.parseDouble(minNum);
+
     }
 
 }
